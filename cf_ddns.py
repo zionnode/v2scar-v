@@ -277,7 +277,7 @@ def init_node():
         public_ip = get_public_ip()
         node_info = get_node_info(config, public_ip, config['apiurl'])
         if 'port' in node_info:
-            return (f'{node_info['prefix']}.{node_info['domain']}', node_info['port'])
+            return (f'{node_info["prefix"]}.{node_info["domain"]}', node_info['port'])
 
 
 # with open(config_file_name, 'r') as config_file:
