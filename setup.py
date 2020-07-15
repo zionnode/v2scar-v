@@ -3,8 +3,7 @@ import os
 import sys
 import yaml
 
-file_string =
-'''version: "3"
+file_string = '''version: "3"
 
 services:
     v2ray:
