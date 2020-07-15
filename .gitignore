@@ -1,4 +1,3 @@
-docker-compose.yml
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -13,3 +12,5 @@ docker-compose.yml
 *.out
 dist/
 .idea/
+
+docker-compose.yml

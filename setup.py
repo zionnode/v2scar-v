@@ -3,7 +3,7 @@ import os
 import sys
 import base64
 import dns.resolver
-
+import requests
 
 domain = sys.argv[1]
 apiurl = sys.argv[2]
