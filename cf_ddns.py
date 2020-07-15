@@ -348,7 +348,8 @@ def check_run_func():
 func_dict = {
     'get_public_ip': get_public_ip,
     'init_node': init_node,
-    'check_run_func': check_run_func
+    'check_run_func': check_run_func,
+    'update_node': update_node,
 }
 
 if __name__ == '__main__':
