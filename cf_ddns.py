@@ -6,15 +6,15 @@
 # (minimum config: one domain name, one host name, email address and api_key)
 # run `crontab -e` and append this line to it:
 # 0 */5 * * * * /PATH_TO_FILE/cf_ddns.py >/dev/null 2>&1
+import json
+import base64
+import sys
+import os
 
 from urllib.request import urlopen
 from urllib.request import Request
 from urllib.error import URLError
 from urllib.error import HTTPError
-
-import json
-import base64
-
 
 config_file_name = '/root/v2scar-v/cf_ddns.conf'
 
@@ -278,6 +278,81 @@ def init_node():
         node_info = get_node_info(config, public_ip, config['apiurl'])
         if 'port' in node_info:
             return (f'{node_info["prefix"]}.{node_info["domain"]}', node_info['port'])
+
+def update_node():
+    with open(config_file_name, 'r') as config_file:
+        try:
+            config = json.loads(config_file.read())
+        except ValueError:
+            print('* problem with the config file')
+            exit(0)
+        public_ip = get_public_ip()
+        node_info = get_node_info(config, public_ip, config['apiurl'])
+        if 'prefix' in node_info:
+            address = f'{node_info["prefix"]}.{node_info["domain"]}'
+            if address != config['domain']['name']:
+                os.system('~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
+                os.system('~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
+                reset_nginx(url)
+
+def reset_nginx(url):
+    nginx_string = f'''server
+{{
+    listen 80;
+    listen [::]:80;
+    server_name {url};
+    if ($http_user_agent ~* "qihoobot|Baiduspider|Googlebot|Googlebot-Mobile|Googlebot-Image|Mediapartners-Google|Adsbot-Google|Feedfetcher-Google|Yahoo! Slurp|Yahoo! Slurp China|YoudaoBot|Sosospider|Sogou spider|Sogou web spider|MSNBot|ia_archiver|Tomato Bot") 
+    {{ 
+        return 403; 
+    }} 
+        location / {{
+        return 301 https://{url}$request_uri; 
+        }}
+}}
+server {{
+    listen  443 ssl;
+    ssl on;
+    ssl_certificate       /root/v2ray.crt;
+    ssl_certificate_key   /root/v2ray.key;
+    ssl_protocols         TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_ciphers           HIGH:!aNULL:!MD5;
+    root /var/www/tempweb;
+    index index.html;
+
+    server_name           {url};
+    location / {{
+      proxy_max_temp_file_size 0;
+    }}
+    location /clientarea {{ 
+    proxy_redirect off;
+    proxy_pass http://127.0.0.1:{port};
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $http_host;
+
+    # Show realip in v2ray access.log
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }}
+}}
+'''
+    with open('/root/v2scar-v/https.conf', 'w+') as file:
+        file.write(nginx_string)
+    os.system('systemctl restart nginx')
+
+def check_run_func():
+    os.system('echo "Hello World"')
+
+
+func_dict = {
+    'get_public_ip': get_public_ip,
+    'init_node': init_node,
+    'check_run_func': check_run_func
+}
+
+if __name__ == '__main__':
+    func_dict[sys.argv[1]]()
 
 
 # with open(config_file_name, 'r') as config_file:

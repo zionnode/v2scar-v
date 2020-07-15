@@ -5,7 +5,7 @@ import base64
 import dns.resolver
 import requests
 
-from cf_ddns import init_node
+from cf_ddns import init_node, reset_nginx
 
 url = sys.argv[1]
 apiurl = sys.argv[2]
@@ -91,47 +91,48 @@ services:
 with open('/root/v2scar-v/docker-compose.yml', 'w+') as file:
     file.write(v2ray_string)
 
-nginx_string = f'''server
-{{
-    listen 80;
-    listen [::]:80;
-    server_name {url};
-    if ($http_user_agent ~* "qihoobot|Baiduspider|Googlebot|Googlebot-Mobile|Googlebot-Image|Mediapartners-Google|Adsbot-Google|Feedfetcher-Google|Yahoo! Slurp|Yahoo! Slurp China|YoudaoBot|Sosospider|Sogou spider|Sogou web spider|MSNBot|ia_archiver|Tomato Bot") 
-    {{ 
-        return 403; 
-    }} 
-        location / {{
-        return 301 https://{url}$request_uri; 
-        }}
-}}
-server {{
-    listen  443 ssl;
-    ssl on;
-    ssl_certificate       /root/v2ray.crt;
-    ssl_certificate_key   /root/v2ray.key;
-    ssl_protocols         TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
-    ssl_ciphers           HIGH:!aNULL:!MD5;
-    root /var/www/tempweb;
-    index index.html;
+reset_nginx(url)
+# nginx_string = f'''server
+# {{
+#     listen 80;
+#     listen [::]:80;
+#     server_name {url};
+#     if ($http_user_agent ~* "qihoobot|Baiduspider|Googlebot|Googlebot-Mobile|Googlebot-Image|Mediapartners-Google|Adsbot-Google|Feedfetcher-Google|Yahoo! Slurp|Yahoo! Slurp China|YoudaoBot|Sosospider|Sogou spider|Sogou web spider|MSNBot|ia_archiver|Tomato Bot") 
+#     {{ 
+#         return 403; 
+#     }} 
+#         location / {{
+#         return 301 https://{url}$request_uri; 
+#         }}
+# }}
+# server {{
+#     listen  443 ssl;
+#     ssl on;
+#     ssl_certificate       /root/v2ray.crt;
+#     ssl_certificate_key   /root/v2ray.key;
+#     ssl_protocols         TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+#     ssl_ciphers           HIGH:!aNULL:!MD5;
+#     root /var/www/tempweb;
+#     index index.html;
 
-    server_name           {url};
-    location / {{
-      proxy_max_temp_file_size 0;
-    }}
-    location /clientarea {{ 
-    proxy_redirect off;
-    proxy_pass http://127.0.0.1:{port};
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Host $http_host;
+#     server_name           {url};
+#     location / {{
+#       proxy_max_temp_file_size 0;
+#     }}
+#     location /clientarea {{ 
+#     proxy_redirect off;
+#     proxy_pass http://127.0.0.1:{port};
+#     proxy_http_version 1.1;
+#     proxy_set_header Upgrade $http_upgrade;
+#     proxy_set_header Connection "upgrade";
+#     proxy_set_header Host $http_host;
 
-    # Show realip in v2ray access.log
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }}
-}}
-'''
+#     # Show realip in v2ray access.log
+#     proxy_set_header X-Real-IP $remote_addr;
+#     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#     }}
+# }}
+# '''
 
-with open('/root/v2scar-v/https.conf', 'w+') as file:
-    file.write(nginx_string)
+# with open('/root/v2scar-v/https.conf', 'w+') as file:
+#     file.write(nginx_string)
