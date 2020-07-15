@@ -37,6 +37,7 @@ def hash_ip_to_node_id(ip):
 
 server_current_ip = get_current_ip()
 domain_resolved_ip = resolve_domain_ip()
+print(server_current_ip, domain_resolved_ip)
 
 if server_current_ip != domain_resolved_ip:
     print(f'Server current IP is not same as domain resolved ip! Continue? y - Yes, n - No')
