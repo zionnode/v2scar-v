@@ -23,6 +23,7 @@ def get_current_ip():
 def resolve_domain_ip(domain):
     cloudflare_dns = dns.resolver.Resolver()
     cloudflare_dns.nameservers = ['1.1.1.1']
+    print(domain)
     try:
         ip_resolved = str(cloudflare_dns.query(domain)[0])
     except:
