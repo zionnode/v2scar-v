@@ -20,7 +20,7 @@ def get_current_ip():
         ip = r.json()['query']
     return ip
 
-def resolve_domain_ip():
+def resolve_domain_ip(domain):
     cloudflare_dns = dns.resolver.Resolver()
     cloudflare_dns.nameservers = ['1.1.1.1']
     try:
@@ -36,7 +36,7 @@ def hash_ip_to_node_id(ip):
 
 
 server_current_ip = get_current_ip()
-domain_resolved_ip = resolve_domain_ip()
+domain_resolved_ip = resolve_domain_ip(domain)
 print(server_current_ip, domain_resolved_ip)
 
 if server_current_ip != domain_resolved_ip:
