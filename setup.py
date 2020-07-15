@@ -42,7 +42,7 @@ if server_current_ip != domain_resolved_ip:
     print(f'Server current IP is not same as domain resolved ip! Continue? y - Yes, n - No')
     string_input = sys.stdin.readline().rstrip('\n')
     if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
-        return
+        exit()
 
 node_id = hash_ip_to_node_id(domain_resolved_ip)
 
