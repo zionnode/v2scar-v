@@ -5,7 +5,7 @@ echo "Type the domain to use (expamle.com), followed by [ENTER]:"
 read DOMAIN
 
 dpkg --configure -a
-apt update -y && apt upgrade -y && apt install -y nginx python3 socat netcat curl wget
+apt update -y && apt upgrade -y && apt install -y nginx python3 socat netcat curl wget python3-pip
 
 cd ~ && mkdir .ssh && chmod 700 .ssh && touch ~/.ssh/authorized_keys
 
@@ -46,13 +46,24 @@ echo "*            hard        nofile        1024000" >> /etc/security/limits.co
 
 echo "ulimit -SHn 1024000" >> /etc/profile
 
+cd ~
 curl  https://get.acme.sh | sh
 systemctl stop nginx
 ~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone -k 2048
 ~/.acme.sh/acme.sh --installcert -d "$DOMAIN" --fullchainpath /etc/v2ray/v2ray.crt --keypath /etc/v2ray/v2ray.key
 git clone https://zionnode:Zw19820130@github.com/zionnode/tempweb.git /var/www/tempweb
+
 cd ~
 git clone https://zionnode:Zw19820130@github.com/zionnode/v2scar-v.git
 cd v2scar-v
 
+pip3 install pyyaml
 python3 setup.py
+
+
+
+cd ~
+touch mycron
+echo '58 0 * * * "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" > /dev/null' >> mycron
+crontab mycron
+rm mycron
