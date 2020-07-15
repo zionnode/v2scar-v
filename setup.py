@@ -5,7 +5,7 @@ import base64
 import dns.resolver
 import requests
 
-from cf-ddns import get_public_ip
+from cf_ddns import get_public_ip
 
 url = sys.argv[1]
 
