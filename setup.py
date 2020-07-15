@@ -13,7 +13,7 @@ services:
         restart: always
         volumes:
             - ./v2ray-config.json:/etc/v2ray/config.json
-        ports: : 
+        ports:
             - 20086:20086
         env_file: 
             - env.v2ray
