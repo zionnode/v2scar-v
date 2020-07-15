@@ -28,6 +28,7 @@ def resolve_domain_ip(domain):
         ip_resolved = str(cloudflare_dns.query(domain)[0])
     except:
         raise ValueError(f'Cannot resolve the domain: {domain}')
+    return ip_resolved
 
 def hash_ip_to_node_id(ip):
     ip_splitted = ip.split('.')
