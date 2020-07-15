@@ -21,5 +21,7 @@ services:
             - v2ray
         links:
             - v2ray
-        env_file: 
-            - env.v2scar
+        environment:
+            V2SCAR_SYNC_TIME: 60
+            V2SCAR_API_ENDPOINT: "http://34.89.127.171:8000/api/user_vmess_config/3717607258/?token=aWxvdmUwNTMwQGdtYWlsLmNvbSsxMDAwMQ%3D%3D"
+            V2SCAR_GRPC_ENDPOINT: "v2ray:8080"

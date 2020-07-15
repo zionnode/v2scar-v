@@ -1,11 +1,21 @@
 #!/bin/bash
 echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
-echo "Type the domain to use (expamle.com), followed by [ENTER]:"
+echo "Type the domain to use (example.com), followed by [ENTER]:"
 read DOMAIN
+
+echo "Type the API server url (http://example.com), followed by [ENTER]:"
+read APIURL
+
+echo "Type the ADMIN email (goodman@example.com), followed by [ENTER]:"
+read ADMIN
+
+echo "Type the ADMIN PORT email (goodman@example.com), followed by [ENTER]:"
+read PORT
 
 dpkg --configure -a
 apt update -y && apt upgrade -y && apt install -y nginx python3 socat netcat curl wget python3-pip
+pip3 install requests
 
 cd ~ && mkdir .ssh && chmod 700 .ssh && touch ~/.ssh/authorized_keys
 
@@ -57,10 +67,7 @@ cd ~
 git clone https://zionnode:Zw19820130@github.com/zionnode/v2scar-v.git
 cd v2scar-v
 
-pip3 install pyyaml
-python3 setup.py
-
-
+python3 setup.py $DOMAIN $APIURL $ADMIN $PORT
 
 cd ~
 touch mycron
