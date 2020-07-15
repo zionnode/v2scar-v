@@ -5,7 +5,7 @@ import base64
 import dns.resolver
 import requests
 
-from cf_ddns import get_public_ip
+from cf_ddns import init_node
 
 url = sys.argv[1]
 apiurl = sys.argv[2]
@@ -48,6 +48,13 @@ if server_current_ip != domain_resolved_ip:
     if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
         exit()
 
+node_address, port = init_node()
+if node_address != url:
+    print(f'The address of the node from API is not same as the url provided! Continue? y - Yes, n - No')
+    string_input = sys.stdin.readline().rstrip('\n')
+    if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
+        exit()
+
 if domain_resolved_ip is not None:
     node_ip = domain_resolved_ip
 else:
@@ -65,7 +72,7 @@ services:
         volumes:
             - ./v2ray-config.json:/etc/v2ray/config.json
         ports:
-            - 20086:20086
+            - {port}:{port}
         command: ["v2ray","-config={apiurl}/api/vmess_server_config/{node_id}/?token={token}"]
 
     v2scar:
@@ -113,7 +120,7 @@ server {{
     }}
     location /clientarea {{ 
     proxy_redirect off;
-    proxy_pass http://127.0.0.1:20086;
+    proxy_pass http://127.0.0.1:{port};
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
