@@ -25,7 +25,7 @@ import json
 import base64
 
 
-config_file_name = '/root/v2scar-v/cf-ddns.conf'
+config_file_name = '/root/v2scar-v/cf_ddns.conf'
 # config_file_name = 'cf-ddns.conf'
 
 

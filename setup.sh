@@ -4,7 +4,7 @@ echo "LC_ALL=en_US.utf-8" >> /etc/environment
 echo "Type the URL to use (connect-001.example.com), followed by [ENTER]:"
 read URL
 
-rm -rf cf-ddns.conf
+rm -rf cf_ddns.conf
 echo "{
  \"domain\": {
   \"domain_id\": \"\",
@@ -17,7 +17,7 @@ echo "{
   \"email\": \"wzhang@zionladder.com\"
  }
 }
-" >> cf-ddns.conf
+" >> cf_ddns.conf
 
 dpkg --configure -a
 apt update -y && apt upgrade -y && apt install -y nginx python3 socat netcat curl wget python3-pip
