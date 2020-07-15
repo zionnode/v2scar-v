@@ -48,7 +48,7 @@ if server_current_ip != domain_resolved_ip:
     if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
         exit()
 
-node_address, port = init_node()
+node_address, v2ray_port = init_node()
 if node_address != url:
     print(f'The address of the node from API is not same as the url provided! Continue? y - Yes, n - No')
     string_input = sys.stdin.readline().rstrip('\n')
@@ -72,7 +72,7 @@ services:
         volumes:
             - ./v2ray-config.json:/etc/v2ray/config.json
         ports:
-            - {port}:{port}
+            - {v2ray_port}:{v2ray_port}
         command: ["v2ray","-config={apiurl}/api/vmess_server_config/{node_id}/?token={token}"]
 
     v2scar:
@@ -91,7 +91,7 @@ services:
 with open('/root/v2scar-v/docker-compose.yml', 'w+') as file:
     file.write(v2ray_string)
 
-reset_nginx(url)
+reset_nginx(url, v2ray_port)
 # nginx_string = f'''server
 # {{
 #     listen 80;

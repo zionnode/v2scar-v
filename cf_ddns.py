@@ -293,9 +293,9 @@ def update_node():
             if address != config['domain']['name']:
                 os.system('~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
                 os.system('~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
-                reset_nginx(url)
+                reset_nginx(url, node_info['port'])
 
-def reset_nginx(url):
+def reset_nginx(url, port):
     nginx_string = f'''server
 {{
     listen 80;
