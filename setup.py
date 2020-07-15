@@ -8,15 +8,9 @@ import requests
 from cf_ddns import get_public_ip
 
 url = sys.argv[1]
-
-print('Input the API url of the node (ex: http://api.examle.com):')
-apiurl = sys.stdin.readline().rstrip('\n')
-
-print('Input the ADMIN email (ex: examle@gmail.com):')
-admin = sys.stdin.readline().rstrip('\n')
-
-print('Input the admin PORT (ex: 8080):')
-port = sys.stdin.readline().rstrip('\n')
+apiurl = sys.argv[2]
+amdin = sys.argv[3]
+port = sys.argv[4]
 
 token = base64.b64encode(bytes(f'{admin}+{port}', 'utf8')).decode()
 

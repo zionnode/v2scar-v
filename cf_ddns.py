@@ -5,29 +5,18 @@
 # open cf-ddns.conf in a text editor and set the necessary parameters.
 # (minimum config: one domain name, one host name, email address and api_key)
 # run `crontab -e` and append this line to it:
-# 0 */5 * * * * /PATH_TO_FILE/cf-ddns.py >/dev/null 2>&1
+# 0 */5 * * * * /PATH_TO_FILE/cf_ddns.py >/dev/null 2>&1
 
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-    from urllib.request import Request
-    from urllib.error import URLError
-    from urllib.error import HTTPError
-    # import urllib.parse
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-    from urllib2 import Request
-    from urllib2 import HTTPError
-    from urllib2 import URLError
+from urllib.request import urlopen
+from urllib.request import Request
+from urllib.error import URLError
+from urllib.error import HTTPError
 
 import json
 import base64
 
 
 config_file_name = '/root/v2scar-v/cf_ddns.conf'
-# config_file_name = 'cf-ddns.conf'
-
 
 def get_public_ip():
     try:
@@ -37,48 +26,38 @@ def get_public_ip():
     except URLError as e:
         return None
 
-
 def get_headers(config):
-    return {'X-Auth-Email': config['user']['email'],
-            'X-Auth-Key': config['user']['api_key'],
+    return {'X-Auth-Email': config['cloudflare_api']['email'],
+            'X-Auth-Key': config['cloudflare_api']['api_key'],
             'Content-type': 'application/json'}
-
 
 def get_base_url():
     return 'https://api.cloudflare.com/client/v4/zones/'
 
 
-def get_node_id(ip):
+def hash_ip_to_node_id(ip):
     ip_splitted = ip.split('.')
     num_to_hash = 256 * 256 * 256 * int(ip_splitted[0]) + 256 * 256 * int(
         ip_splitted[1]) + 256 * int(ip_splitted[2]) + int(ip_splitted[3])
     return 256 * 256 * 256 * 256 - num_to_hash
 
-
 def get_token(config):
     try:
-        print(config['username'], config['port'])
         token = base64.b64encode(
-            bytes('{}+{}'.format(config['username'], config['port']), 'utf8')).decode()
+            bytes('{}+{}'.format(config['admin']['email'], config['admin']['port']), 'utf8')).decode()
     except:
         token = base64.b64encode(
             bytes('{}+{}'.format(config['username'], config['port']))).decode()
-    print(token)
     return token
 
 
-def get_node_info(config, ip, api_url):
-    # api 可能回复
-    # 1. 尚未上线, 或者ip已经更换, 返回{'message':'no_such_node'}, 直接退出
-    # 2. 初次查询, config prefix空，可查到node_id, 返回prefix, domain, api
-    # 3. 非初次查询, config prifix非空，可查到node_id, 返回prefix, domain, api
+def get_node_info(config, ip, apiurl):
     try:
-        node_id = get_node_id(ip)
+        node_id = hash_ip_to_node_id(ip)
         token = get_token(config)
         header = {'token': token, 'Content-type': 'application/json'}
-        apiurl = '{api_url}/api/nodeinfo/{node_id}'.format(
-            api_url=api_url, node_id=node_id)
-        api_req = Request(apiurl, headers=header)
+        api_endpoint = f'{apiurl}/api/nodeinfo/{node_id}/vtwo/'
+        api_req = Request(api_endpoint, headers=header)
         api_resp = urlopen(api_req)
         return json.loads(api_resp.read().decode('utf-8'))
     except:
@@ -223,10 +202,6 @@ def query_ddns(config):
         pass
     return None
 
-    # for d in query_resp['result']:
-    #     if d['id'] == config['domain']['host']['id']:
-    #         return
-
 
 def update_prefix(config, node_info, update):
     public_ip = get_public_ip()
@@ -265,33 +240,6 @@ def update_prefix(config, node_info, update):
     return config, update
 
 
-with open(config_file_name, 'r') as config_file:
-    try:
-        config = json.loads(config_file.read())
-    except ValueError:
-        print('* problem with the config file')
-        exit(0)
-
-if not config['user']['email'] or not config['user']['api_key']:
-    print('* missing CloudFlare auth credentials')
-    exit(0)
-
-if not config['coreapi']:
-    print('* missing core_api address')
-    exit(0)
-
-public_ip = None
-update = False
-
-public_ip = get_public_ip()
-if not public_ip:
-    print('* Failed to get any public IP address')
-    exit(0)
-
-node_info = get_node_info(config, public_ip, config['coreapi'])
-print(node_info)
-
-
 def update_public_ip(config, update):
     content_header = get_headers(config)
     base_url = get_base_url()
@@ -319,34 +267,87 @@ def update_public_ip(config, update):
         pass
     return config, False
 
+def init_node():
+    with open(config_file_name, 'r') as config_file:
+        try:
+            config = json.loads(config_file.read())
+        except ValueError:
+            print('* problem with the config file')
+            exit(0)
+        public_ip = get_public_ip()
+        node_info = get_node_info(config, public_ip, config['apiurl'])
+        if 'port' in node_info:
+            return (f'{node_info['prefix']}.{node_info['domain']}', node_info['port'])
 
-if not 'domain' in node_info:
-    # 查不到 node_info 但node 曾经注册过 core, 可能1: core 更改了对应的node 2. 此 node 的公网IP 更改过
-    if config['domain']['host']['ipv4'] and config['domain']['host']['id'] and config['domain']['id'] and config['domain']['name'] and config['domain']['host']['name']:
-        if public_ip != config['domain']['host']['ipv4']:
-            ddns = query_ddns(config)
-            print(ddns['id'], ddns['content'])
-            print(config['domain']['host']['id'], config['domain']['host']['ipv4'])
-            if ddns and ddns['id'] == config['domain']['host']['id'] and ddns['content'] == config['domain']['host']['ipv4']:
-                # 查询到该 node 的 DDNS 记录，且IP与该node 上存储的一致，说明core 未主动更改 IP, 是该node IP地址自动变化
-                print('updating name')
-                config, update = update_public_ip(config, update)
+
+# with open(config_file_name, 'r') as config_file:
+#     try:
+#         config = json.loads(config_file.read())
+#     except ValueError:
+#         print('* problem with the config file')
+#         exit(0)
+
+# if not config['cloudflare_api']['email'] or not config['cloudflare_api']['api_key']:
+#     print('* missing CloudFlare auth credentials')
+#     exit(0)
+
+# if not config['apiurl']:
+#     print('* missing core_api address')
+#     exit(0)
+
+# if config['dynamic'] in ['True', 'TRUE']:
+#     is_dynamic = True
+# else:
+#     is_dynamic = False
+
+# public_ip = None
+# update = False
+
+# public_ip = get_public_ip()
+# if not public_ip:
+#     print('* Failed to get any public IP address')
+#     exit(0)
+
+# node_info = get_node_info(config, public_ip, config['apiurl'])
+# print(node_info)
+
+# if is_dynamic:
+#     pass
+# else:
+#     if hasattr(node_info, 'port'):
+#         port = node_info.port
 
 
-if 'prefix' in node_info:
-    if not config['domain']['id'] or config['domain']['name'] != node_info['domain']:
-        # 首次登录该 node
-        config, update = update_or_get_dns_zone_id(config, node_info['domain'])
-        print(config)
-    if not config['domain']['host']['name'] or config['domain']['host']['name'] != node_info['prefix']:
-        print(node_info['prefix'])
-        config['domain']['host']['name'] = node_info['prefix']
-        ddns = query_ddns(config)
-        print(ddns)
-        if ddns['content'] == get_public_ip():
-            config['domain']['host']['id'] = ddns['id']
-            config['domain']['host']['ipv4'] = get_public_ip()
-            update = True
+
+
+
+# if not 'domain' in node_info:
+#     # 查不到 node_info 但node 曾经注册过 core, 可能1: core 更改了对应的node 2. 此 node 的公网IP 更改过
+#     if config['domain']['host']['ipv4'] and config['domain']['host']['id'] and config['domain']['id'] and config['domain']['name'] and config['domain']['host']['name']:
+#         if public_ip != config['domain']['host']['ipv4']:
+#             ddns = query_ddns(config)
+#             print(ddns['id'], ddns['content'])
+#             print(config['domain']['host']['id'], config['domain']['host']['ipv4'])
+#             if ddns and ddns['id'] == config['domain']['host']['id'] and ddns['content'] == config['domain']['host']['ipv4']:
+#                 # 查询到该 node 的 DDNS 记录，且IP与该node 上存储的一致，说明core 未主动更改 IP, 是该node IP地址自动变化
+#                 print('updating name')
+#                 config, update = update_public_ip(config, update)
+
+
+# if 'prefix' in node_info:
+#     if not config['domain']['id'] or config['domain']['name'] != node_info['domain']:
+#         # 首次登录该 node
+#         config, update = update_or_get_dns_zone_id(config, node_info['domain'])
+#         print(config)
+#     if not config['domain']['host']['name'] or config['domain']['host']['name'] != node_info['prefix']:
+#         print(node_info['prefix'])
+#         config['domain']['host']['name'] = node_info['prefix']
+#         ddns = query_ddns(config)
+#         print(ddns)
+#         if ddns['content'] == get_public_ip():
+#             config['domain']['host']['id'] = ddns['id']
+#             config['domain']['host']['ipv4'] = get_public_ip()
+#             update = True
 
 
 # # node_info 查询失败，返回{'message': ''}
@@ -384,9 +385,9 @@ if 'prefix' in node_info:
 #     update = True
 
 # if any records were updated, update the config file accordingly
-if update:
-    print('* updates completed. bye.')
-    with open(config_file_name, 'w') as config_file:
-        json.dump(config, config_file, indent=1, sort_keys=True)
-else:
-    print('* nothing to update. bye.')
+# if update:
+#     print('* updates completed. bye.')
+#     with open(config_file_name, 'w') as config_file:
+#         json.dump(config, config_file, indent=1, sort_keys=True)
+# else:
+#     print('* nothing to update. bye.')

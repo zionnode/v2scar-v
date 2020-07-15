@@ -1,21 +1,41 @@
 #!/bin/bash
 echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
-echo "Type the URL to use (connect-001.example.com), followed by [ENTER]:"
+echo "Type the URL to use (ex: connect-001.example.com), followed by [ENTER]:"
 read URL
+
+echo "Is this a dynamic IP server (ex: True or False), followed by [ENTER]:"
+read DYNAMIC
+
+echo "Type the API Url (ex: http://api.example.com), followed by [ENTER]:"
+read APIURL
+
+echo "Type the ADMIN Email (ex: admin@example.com), followed by [ENTER]:"
+read ADMIN_EMAIL
+
+echo "Type the ADMIN Port (ex: 8080), followed by [ENTER]:"
+read PORT
+
+
 
 rm -rf cf_ddns.conf
 echo "{
- \"domain\": {
-  \"domain_id\": \"\",
-  \"ipv4\": \"\",
-  \"id\": \"\",
-  \"name\": \"$URL\"
- },
- \"user\": {
-  \"api_key\": \"37b78ed9890b7e577aa141fbedd474211b35a\",
-  \"email\": \"wzhang@zionladder.com\"
- }
+    \"domain\": {
+        \"domain_id\": \"\",
+        \"ipv4\": \"\",
+        \"id\": \"\",
+        \"name\": \"$URL\"
+    },
+    \"cloudflare_api\": {
+        \"api_key\": \"37b78ed9890b7e577aa141fbedd474211b35a\",
+        \"email\": \"wzhang@zionladder.com\"
+    },
+    \"admin\": {
+        \"email\": \"$ADMIN_EMAIL\",
+        \"port\": \"$PORT\"
+    },
+    \"apiurl\": \"$APIURL\",
+    \"dynamic\": \"$DYNAMIC\"
 }
 " >> cf_ddns.conf
 
@@ -68,7 +88,7 @@ systemctl stop nginx
 ~/.acme.sh/acme.sh --installcert -d "$URL" --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key
 git clone https://zionnode:Zw19820130@github.com/zionnode/tempweb.git /var/www/tempweb
 
-python3 setup.py $URL
+python3 setup.py $URL $APIURL $ADMIN_EMAIL $PORT
 
 rm -rf /etc/nginx/sites-available/https.conf
 rm -rf /etc/nginx/sites-enabled/https.conf
