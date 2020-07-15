@@ -11,7 +11,7 @@ print('Input the API url of the node (ex: http://api.examle.com):')
 apiurl = sys.stdin.readline().rstrip('\n')
 
 print('Input the ADMIN email (ex: examle@gmail.com):')
-apiurl = sys.stdin.readline().rstrip('\n')
+admin = sys.stdin.readline().rstrip('\n')
 
 print('Input the admin PORT (ex: 8080):')
 port = sys.stdin.readline().rstrip('\n')
