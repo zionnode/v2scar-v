@@ -9,7 +9,7 @@ from cf_ddns import get_public_ip
 
 url = sys.argv[1]
 apiurl = sys.argv[2]
-amdin = sys.argv[3]
+admin = sys.argv[3]
 port = sys.argv[4]
 
 token = base64.b64encode(bytes(f'{admin}+{port}', 'utf8')).decode()
