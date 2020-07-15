@@ -291,8 +291,8 @@ def update_node():
         if 'prefix' in node_info:
             address = f'{node_info["prefix"]}.{node_info["domain"]}'
             if address != config['domain']['name']:
-                os.system('~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
-                os.system('~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
+                os.system(f'~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
+                os.system(f'~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
                 reset_nginx(address, node_info['port'])
                 with open(config_file_name, 'w') as config_file:
                     config['domain']['name'] = address
