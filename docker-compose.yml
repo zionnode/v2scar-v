@@ -7,8 +7,8 @@ services:
         restart: always
         volumes:
             - ./v2ray-config.json:/etc/v2ray/config.json
-        ports:
-            - "20086:20086"
+        expose: 
+            - 20086
         env_file: 
             - env.v2ray
         command: ["v2ray","-config=http://34.89.127.171:8000/api/vmess_server_config/3717607258/?token=aWxvdmUwNTMwQGdtYWlsLmNvbSsxMDAwMQ%3D%3D"]
