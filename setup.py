@@ -5,11 +5,9 @@ import base64
 import dns.resolver
 import requests
 
-from ddns import get_public_ip
+from cf-ddns import get_public_ip
 
 url = sys.argv[1]
-
-print(get_public_ip())
 
 print('Input the API url of the node (ex: http://api.examle.com):')
 apiurl = sys.stdin.readline().rstrip('\n')
