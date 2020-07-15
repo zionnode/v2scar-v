@@ -5,10 +5,17 @@ import base64
 import dns.resolver
 import requests
 
-domain = sys.argv[1]
-apiurl = sys.argv[2]
-admin = sys.argv[3]
-port = sys.argv[4]
+url = sys.argv[1]
+
+print('Input the API url of the node (ex: http://api.examle.com):')
+apiurl = sys.stdin.readline().rstrip('\n')
+
+print('Input the ADMIN email (ex: examle@gmail.com):')
+apiurl = sys.stdin.readline().rstrip('\n')
+
+print('Input the admin PORT (ex: 8080):')
+port = sys.stdin.readline().rstrip('\n')
+
 token = base64.b64encode(bytes(f'{admin}+{port}', 'utf8')).decode()
 
 def get_current_ip():
@@ -20,14 +27,13 @@ def get_current_ip():
         ip = r.json()['query']
     return ip
 
-def resolve_domain_ip(domain):
+def resolve_domain_ip(address):
     cloudflare_dns = dns.resolver.Resolver()
     cloudflare_dns.nameservers = ['1.1.1.1']
-    print(domain)
     try:
-        ip_resolved = str(cloudflare_dns.query(domain)[0])
+        ip_resolved = str(cloudflare_dns.query(address)[0])
     except:
-        raise ValueError(f'Cannot resolve the domain: {domain}')
+        raise ValueError(f'Cannot resolve the domain: {address}')
     return ip_resolved
 
 def hash_ip_to_node_id(ip):
@@ -38,8 +44,7 @@ def hash_ip_to_node_id(ip):
 
 
 server_current_ip = get_current_ip()
-domain_resolved_ip = resolve_domain_ip(domain)
-print(server_current_ip, domain_resolved_ip)
+domain_resolved_ip = resolve_domain_ip(url)
 
 if server_current_ip != domain_resolved_ip:
     print(f'Server current IP is not same as domain resolved ip! Continue? y - Yes, n - No')
@@ -47,7 +52,12 @@ if server_current_ip != domain_resolved_ip:
     if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
         exit()
 
-node_id = hash_ip_to_node_id(domain_resolved_ip)
+if domain_resolved_ip is not None:
+    node_ip = domain_resolved_ip
+else:
+    node_ip = server_current_ip
+
+node_id = hash_ip_to_node_id(node_ip)
 
 file_string = f'''version: "3"
 
@@ -58,7 +68,7 @@ services:
         restart: always
         volumes:
             - ./v2ray-config.json:/etc/v2ray/config.json
-        ports: : 
+        ports:
             - 20086:20086
         env_file: 
             - env.v2ray

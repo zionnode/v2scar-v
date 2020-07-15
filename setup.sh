@@ -1,17 +1,8 @@
 #!/bin/bash
 echo "LANG=en_US.utf-8" >> /etc/environment
 echo "LC_ALL=en_US.utf-8" >> /etc/environment
-echo "Type the domain to use (example.com), followed by [ENTER]:"
-read DOMAIN
-
-echo "Type the API server url (http://example.com), followed by [ENTER]:"
-read APIURL
-
-echo "Type the ADMIN email (goodman@example.com), followed by [ENTER]:"
-read ADMIN
-
-echo "Type the ADMIN PORT email (goodman@example.com), followed by [ENTER]:"
-read PORT
+echo "Type the URL to use (connect-001.example.com), followed by [ENTER]:"
+read URL
 
 dpkg --configure -a
 apt update -y && apt upgrade -y && apt install -y nginx python3 socat netcat curl wget python3-pip
@@ -59,15 +50,15 @@ echo "ulimit -SHn 1024000" >> /etc/profile
 cd ~
 curl  https://get.acme.sh | sh
 systemctl stop nginx
-~/.acme.sh/acme.sh --issue -d "$DOMAIN" --standalone -k 2048
-~/.acme.sh/acme.sh --installcert -d "$DOMAIN" --fullchainpath /etc/v2ray/v2ray.crt --keypath /etc/v2ray/v2ray.key
+~/.acme.sh/acme.sh --issue -d "$URL" --standalone -k 2048
+~/.acme.sh/acme.sh --installcert -d "$URL" --fullchainpath /etc/v2ray/v2ray.crt --keypath /etc/v2ray/v2ray.key
 git clone https://zionnode:Zw19820130@github.com/zionnode/tempweb.git /var/www/tempweb
 
 cd ~
 git clone https://zionnode:Zw19820130@github.com/zionnode/v2scar-v.git
 cd v2scar-v
 
-python3 setup.py $DOMAIN $APIURL $ADMIN $PORT
+python3 setup.py $URL
 
 cd ~
 touch mycron
