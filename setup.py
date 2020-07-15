@@ -70,8 +70,6 @@ services:
             - ./v2ray-config.json:/etc/v2ray/config.json
         ports:
             - 20086:20086
-        env_file: 
-            - env.v2ray
         command: ["v2ray","-config={apiurl}/api/vmess_server_config/{node_id}/?token={token}"]
 
     v2scar:
