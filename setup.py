@@ -74,7 +74,7 @@ services:
             - v2ray
         environment:
             V2SCAR_SYNC_TIME: 60
-            V2SCAR_API_ENDPOINT: "{apirul}/api/user_vmess_config/{node_id}/?token={token}"
+            V2SCAR_API_ENDPOINT: "{apiurl}/api/user_vmess_config/{node_id}/?token={token}"
             V2SCAR_GRPC_ENDPOINT: "v2ray:8080"'''
 
 with open('/root/v2scar-v/docker-compose.yml', 'w+') as file:
