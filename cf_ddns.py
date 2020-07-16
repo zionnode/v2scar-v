@@ -189,45 +189,37 @@ def query_ddns(config):
     return None
 
 
-def update_new_ip(config):
-
+def update_new_ip():
+    with open(config_file_name, 'r') as config_file:
+        try:
+            config = json.loads(config_file.read())
+        except ValueError:
+            print('* problem with the config file')
+            exit(0)
+    if not config['dynamic']:
+        return
     public_ip = get_public_ip()
+    if config['ipv4'] == public_ip:
+        return
     base_url = get_base_url()
-
-
-    if prefix and public_ip and config['domain']['id']:
-        if config['domain']['host']['id']:
-            if config['domain']['host']['ipv4'] == public_ip:
-                print('no ip changed, no update')
-                return config, update
-            try:
-                content_header = get_headers(config)
-                base_url = get_base_url()
-                data = json.dumps({
-                    'type': 'A',
-                    'name': prefix,
-                    'content': public_ip,
-                    'priority': 5,
-                    'ttl': 120,
-                    'proxied': False
-                })
-                update_req = Request(
-                    '{}{}/dns_records/{}'.format(
-                        base_url, config['domain']['id'], config['domain']['host']['id']),
-                    headers=content_header,
-                    data=data.encode('utf-8')
-                )
-                update_req.get_method = lambda: 'PUT'
-                update_resp = json.loads(
-                    urlopen(update_req).read().decode('utf-8'))
-                if update_resp['success']:
-                    print('update success !')
-                    config['domain']['host']['ipv4'] = update_resp['result']['content']
-                    return config, True
-            except:
-                pass
-    return config, update
-
+    data = json.dumps({
+        'type': 'A',
+        'name': config['domain']['name'],
+        'content': public_ip,
+        'priority': 5,
+        'ttl': 120,
+        'proxied': False
+    })
+    update_req = Request(
+        f"{base_url}{config['domain']['domain_id']}/dns_records/{config['domain']['id']}",
+        headers=content_header,
+        data=data.encode('utf-8'))
+    update_req.get_method = lambda: 'PUT'
+    update_resp = json.loads(urlopen(update_req).read().decode('utf-8'))
+    if update_resp['success']:
+        config['domain']['ipv4'] = update_resp['result']['content']
+        return config, True
+    return config
 
 def update_public_ip(config, update):
     content_header = get_headers(config)
@@ -281,18 +273,20 @@ def update_node():
         except ValueError:
             print('* problem with the config file')
             exit(0)
-        public_ip = get_public_ip()
-        node_info = get_node_info(config, public_ip, config['apiurl'])
-        if 'prefix' in node_info:
-            address = f'{node_info["prefix"]}.{node_info["domain"]}'
-            if address != config['domain']['name']:
-                os.system('systemctl stop nginx')
-                os.system(f'~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
-                os.system(f'~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
-                reset_nginx(address, node_info['port'])
-                with open(config_file_name, 'w') as config_file:
-                    config['domain']['name'] = address
-                    json.dump(config, config_file, indent=1, sort_keys=True)
+    public_ip = get_public_ip()
+    node_info = get_node_info(config, public_ip, config['apiurl'])
+    if 'prefix' in node_info:
+        address = f'{node_info["prefix"]}.{node_info["domain"]}'
+        dynamic = node_info["dynamic"]
+        if address != config['domain']['name']:
+            os.system('systemctl stop nginx')
+            os.system(f'~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
+            os.system(f'~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
+            reset_nginx(address, node_info['port'])
+            config['domain']['name'] = address
+        config['dynamic'] = dynamic
+        with open(config_file_name, 'w') as config_file:
+            json.dump(config, config_file, indent=1, sort_keys=True)
 
 def reset_nginx(url, port):
     nginx_string = f'''server
