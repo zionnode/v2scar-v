@@ -189,6 +189,10 @@ def query_ddns(config):
     return None
 
 
+def save_config(config):
+    with open(config_file_name, 'w') as config_file: 
+        json.dump(config, config_file, indent=1, sort_keys=True)
+
 def update_dynamic_ip():
     with open(config_file_name, 'r') as config_file:
         try:
@@ -221,8 +225,8 @@ def update_dynamic_ip():
     update_resp = json.loads(urlopen(update_req).read().decode('utf-8'))
     if update_resp['success']:
         config['domain']['ipv4'] = update_resp['result']['content']
-        return config, True
-    return config
+        save_config(config)
+
 
 def update_public_ip(config, update):
     content_header = get_headers(config)
@@ -265,8 +269,7 @@ def init_node():
         config['domain']['id'] = query_ddns(config)['id']
         config['domain']['ipv4'] = query_ddns(config)['content']
         config['dynamic'] = node_info['dynamic']
-        with open(config_file_name, 'w') as config_file: 
-            json.dump(config, config_file, indent=1, sort_keys=True)
+        save_config(config)
         return (f'{node_info["prefix"]}.{node_info["domain"]}', node_info['port'])
 
 def update_node():
@@ -288,8 +291,8 @@ def update_node():
             reset_nginx(address, node_info['port'])
             config['domain']['name'] = address
         config['dynamic'] = dynamic
-        with open(config_file_name, 'w') as config_file:
-            json.dump(config, config_file, indent=1, sort_keys=True)
+        save_config(config)
+        
 
 def reset_nginx(url, port):
     nginx_string = f'''server
