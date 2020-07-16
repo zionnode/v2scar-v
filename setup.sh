@@ -4,9 +4,6 @@ echo "LC_ALL=en_US.utf-8" >> /etc/environment
 echo "Type the URL to use (ex: connect-001.example.com), followed by [ENTER]:"
 read URL
 
-echo "Is this a dynamic IP server (ex: True or False), followed by [ENTER]:"
-read DYNAMIC
-
 echo "Type the API Url (ex: http://api.example.com), followed by [ENTER]:"
 read APIURL
 
@@ -35,7 +32,7 @@ echo "{
         \"port\": \"$PORT\"
     },
     \"apiurl\": \"$APIURL\",
-    \"dynamic\": \"$DYNAMIC\"
+    \"dynamic\": \"\"
 }
 " >> cf_ddns.conf
 

@@ -273,10 +273,10 @@ def init_node():
     node_info = get_node_info(config, public_ip, config['apiurl'])
     if 'port' in node_info:
         config, update = get_dns_zone_id(config, node_info['domain'])
-        print(query_ddns(config))
-        if update:
-            with open(config_file_name, 'w') as config_file: 
-                json.dump(config, config_file, indent=1, sort_keys=True)
+        config['domain']['id'] = query_ddns(config)['id']
+        config['domain']['ipv4'] = query_ddns(config)['content']
+        with open(config_file_name, 'w') as config_file: 
+            json.dump(config, config_file, indent=1, sort_keys=True)
         return (f'{node_info["prefix"]}.{node_info["domain"]}', node_info['port'])
 
 def update_node():
