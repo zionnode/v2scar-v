@@ -201,6 +201,7 @@ def update_dynamic_ip():
     public_ip = get_public_ip()
     if config['domain']['ipv4'] == public_ip:
         return
+    content_header = get_headers(config)
     base_url = get_base_url()
     data = json.dumps({
         'type': 'A',
