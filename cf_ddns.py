@@ -177,17 +177,8 @@ def create_prefix(config, node_info, update):
 def query_ddns(config):
     content_header = get_headers(config)
     base_url = get_base_url()
-    print('{base_url}{zion_id}/dns_records?type={qtype}&name={name}'.format(
-            base_url=base_url,
-            zion_id=config['domain']['domain_id'],
-            qtype='A',
-            name=config['domain']['name']))
     query_req = Request(
-        '{base_url}{zion_id}/dns_records?type={qtype}&name={name}'.format(
-            base_url=base_url,
-            zion_id=config['domain']['domain_id'],
-            qtype='A',
-            name=config['domain']['name']),
+        f'{base_url}{config['domain']['domain_id']}/dns_records?type=A&name={config['domain']['name']}',
         headers=content_header)
     try:
         query_resp = json.loads(urlopen(query_req).read().decode('utf-8'))['result']
@@ -198,9 +189,12 @@ def query_ddns(config):
     return None
 
 
-def update_prefix(config, node_info, update):
+def update_new_ip(config):
+
     public_ip = get_public_ip()
-    prefix = node_info['prefix']
+    base_url = get_base_url()
+
+
     if prefix and public_ip and config['domain']['id']:
         if config['domain']['host']['id']:
             if config['domain']['host']['ipv4'] == public_ip:
@@ -275,6 +269,7 @@ def init_node():
         config, update = get_dns_zone_id(config, node_info['domain'])
         config['domain']['id'] = query_ddns(config)['id']
         config['domain']['ipv4'] = query_ddns(config)['content']
+        config['dynamic'] = node_info['dynamic']
         with open(config_file_name, 'w') as config_file: 
             json.dump(config, config_file, indent=1, sort_keys=True)
         return (f'{node_info["prefix"]}.{node_info["domain"]}', node_info['port'])
