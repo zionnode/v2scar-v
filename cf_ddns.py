@@ -126,6 +126,7 @@ def get_dns_zone_id(config, domain):
             zone_id_req = Request(base_url, headers=content_header)
             zone_id_resp = urlopen(zone_id_req)
             for d in json.loads(zone_id_resp.read().decode('utf-8'))['result']:
+                print(d)
                 if config['domain']['name'] == d['name']:
                     config['domain']['domain_id'] = d['id']
                     print('* zone id for "{0}" is'
