@@ -189,7 +189,7 @@ def query_ddns(config):
     return None
 
 
-def update_new_ip():
+def update_dynamic_ip():
     with open(config_file_name, 'r') as config_file:
         try:
             config = json.loads(config_file.read())
@@ -343,6 +343,7 @@ func_dict = {
     'init_node': init_node,
     'check_run_func': check_run_func,
     'update_node': update_node,
+    'update_dynamic_ip': update_dynamic_ip,
 }
 
 if __name__ == '__main__':
