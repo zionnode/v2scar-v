@@ -138,11 +138,6 @@ def get_dns_zone_id(config, domain):
     return config, False
 
 
-def create_or_update_prefix(config, node_info, update):
-    public_ip = get_public_ip()
-    prefix = node_info['prefix']
-
-
 def create_prefix(config, node_info, update):
     public_ip = get_public_ip()
     prefix = node_info['prefix']
@@ -184,15 +179,15 @@ def query_ddns(config):
     base_url = get_base_url()
     print('{base_url}{zion_id}/dns_records?type={qtype}&name={name}'.format(
             base_url=base_url,
-            zion_id=config['domain']['id'],
+            zion_id=config['domain']['domain_id'],
             qtype='A',
-            name=config['domain']['host']['name']+'.'+config['domain']['name']))
+            name=config['domain']['name']))
     query_req = Request(
         '{base_url}{zion_id}/dns_records?type={qtype}&name={name}'.format(
             base_url=base_url,
-            zion_id=config['domain']['id'],
+            zion_id=config['domain']['domain_id'],
             qtype='A',
-            name=config['domain']['host']['name']+'.'+config['domain']['name']),
+            name=config['domain']['name']),
         headers=content_header)
     try:
         query_resp = json.loads(urlopen(query_req).read().decode('utf-8'))['result']
@@ -278,7 +273,7 @@ def init_node():
     node_info = get_node_info(config, public_ip, config['apiurl'])
     if 'port' in node_info:
         config, update = get_dns_zone_id(config, node_info['domain'])
-        print(config, update)
+        print(query_ddns(config))
         if update:
             with open(config_file_name, 'w') as config_file: 
                 json.dump(config, config_file, indent=1, sort_keys=True)
