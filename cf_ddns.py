@@ -199,7 +199,7 @@ def update_dynamic_ip():
     if not config['dynamic']:
         return
     public_ip = get_public_ip()
-    if config['ipv4'] == public_ip:
+    if config['domain']['ipv4'] == public_ip:
         return
     base_url = get_base_url()
     data = json.dumps({
