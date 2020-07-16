@@ -178,7 +178,7 @@ def query_ddns(config):
     content_header = get_headers(config)
     base_url = get_base_url()
     query_req = Request(
-        f'{base_url}{config["domain:"]["domain_id"]}/dns_records?type=A&name={config["domain"]["name"]}',
+        f'{base_url}{config["domain"]["domain_id"]}/dns_records?type=A&name={config["domain"]["name"]}',
         headers=content_header)
     try:
         query_resp = json.loads(urlopen(query_req).read().decode('utf-8'))['result']
