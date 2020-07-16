@@ -196,9 +196,11 @@ def update_dynamic_ip():
         except ValueError:
             print('* problem with the config file')
             exit(0)
+    print(config['dynamic'])
     if not config['dynamic']:
         return
     public_ip = get_public_ip()
+    print(config['domain']['ipv4'], public_ip)
     if config['domain']['ipv4'] == public_ip:
         return
     content_header = get_headers(config)
