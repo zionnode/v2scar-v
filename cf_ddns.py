@@ -118,7 +118,7 @@ def get_dns_zone_id(config, domain):
         return config
 
     # get domain zone id from CloudFlare if missing
-    if not config['domain']['id']:
+    if not config['domain']['domain_id']:
         try:
             print(
                 '* zone id for "{0}" is missing. attempting to '
@@ -127,7 +127,7 @@ def get_dns_zone_id(config, domain):
             zone_id_resp = urlopen(zone_id_req)
             for d in json.loads(zone_id_resp.read().decode('utf-8'))['result']:
                 if config['domain']['name'] == d['name']:
-                    config['domain']['id'] = d['id']
+                    config['domain']['domain_id'] = d['id']
                     print('* zone id for "{0}" is'
                           ' {1}'.format(config['domain']['name'], config['domain']['id']))
                     return config, True
