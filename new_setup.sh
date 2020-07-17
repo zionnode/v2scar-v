@@ -44,56 +44,7 @@ echo "*            hard        nofile        1024000" >> /etc/security/limits.co
 
 echo "ulimit -SHn 1024000" >> /etc/profile
 
-
-echo "Type the URL to use (ex: connect-001.example.com), followed by [ENTER]:"
-read URL
-
-echo "Type the API Url (ex: http://api.example.com), followed by [ENTER]:"
-read APIURL
-
-echo "Type the ADMIN Email (ex: admin@example.com), followed by [ENTER]:"
-read ADMIN_EMAIL
-
-echo "Type the ADMIN Port (ex: 8080), followed by [ENTER]:"
-read PORT
-
-
-rm -rf cf_ddns.conf
-echo "{
-    \"domain\": {
-        \"domain_id\": \"\",
-        \"ipv4\": \"\",
-        \"id\": \"\",
-        \"name\": \"$URL\"
-    },
-    \"cloudflare_api\": {
-        \"api_key\": \"37b78ed9890b7e577aa141fbedd474211b35a\",
-        \"email\": \"wzhang@zionladder.com\"
-    },
-    \"admin\": {
-        \"email\": \"$ADMIN_EMAIL\",
-        \"port\": \"$PORT\"
-    },
-    \"apiurl\": \"$APIURL\",
-    \"dynamic\": \"\"
-}
-" >> cf_ddns.conf
-
-
-curl https://get.acme.sh | sh
-systemctl stop nginx
-~/.acme.sh/acme.sh --issue -d "$URL" --standalone -k 2048
-~/.acme.sh/acme.sh --installcert -d "$URL" --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key
-git clone https://zionnode:Zw19820130@github.com/zionnode/tempweb.git /var/www/tempweb
-
-python3 setup.py $URL $APIURL $ADMIN_EMAIL $PORT
-
-rm -rf /etc/nginx/sites-available/https.conf
-rm -rf /etc/nginx/sites-enabled/https.conf
-ln -s /root/v2scar-v/https.conf /etc/nginx/sites-available/
-ln -s /etc/nginx/sites-available/https.conf /etc/nginx/sites-enabled/
-systemctl restart nginx
-
+python3 /root/v2scar-v/cf_ddns.py init_node
 touch mycron
 echo '58 0 * * * "/root/.acme.sh"/acme.sh --cron --home "/root/.acme.sh" > /dev/null' >> mycron
 crontab mycron
