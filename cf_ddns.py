@@ -204,11 +204,9 @@ def update_dynamic_ip():
         except ValueError:
             print('* problem with the config file')
             exit(0)
-    print(config['dynamic'])
     if not config['dynamic']:
         return
     public_ip = get_public_ip()
-    print(config['domain']['ipv4'], public_ip)
     if config['domain']['ipv4'] == public_ip:
         return
     content_header = get_headers(config)
@@ -314,12 +312,32 @@ def init_node():
             ask_for_continue('WRANNING: failed to get domain ID from cloudfalre ddns!')
         os.system('curl https://get.acme.sh | sh')
         create_tls_keys(config['domain']['name'], node_info)
-        if 'port' in node_info:
-            v2ray_config = get_v2scar_config(config, node_info['port'])
-            with open('/root/v2scar-v/docker-compose.yml', 'w+') as file:
-                file.write(v2ray_config)
-            os.system('cd /root/v2scar-v && docker-compose up -d')
+    if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray'
+        set_v2ray_node(config, node_info)
+    if 'node_type' in node_info and node_info['node_type'] == 'ssr':
+        set_ssr_node()
+    if 'node_type' in node_info and node_info['node_type'] == 'ss':
+        set_ssr_node()
+    if 'dynamic' in node_info and node_info['dynamic']:
+        create_crontab_dynamic_ip()
 
+def create_crontab_dynamic_ip():
+    os.system('crontab -l > mycron')
+    os.system('echo "*/10 * * * * python3 /root/v2scar-v/cf_ddns.py update_dynamic_ip" >> mycron')
+    os.system('crontab mycron')
+    os.system('rm crontab')
+
+def set_v2ray_node(config, node_info):
+    v2ray_config = get_v2scar_config(config, node_info['port'])
+    with open('/root/v2scar-v/docker-compose.yml', 'w+') as file:
+        file.write(v2ray_config)
+    os.system('cd /root/v2scar-v && docker-compose up -d')
+
+def set_ss_node():
+    pass
+
+def set_ssr_node():
+    pass
 
 def get_v2scar_config(config, port):
     apiurl = config['apiurl']
