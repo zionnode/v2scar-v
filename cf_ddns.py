@@ -339,7 +339,7 @@ def update_node():
             print('* problem with the config file')
             exit(0)
     node_info = get_node_info(config)
-    config = update_node(config, node_info)
+    config = update_config(config, node_info)
     if 'message' in node_info:
         print(f'ERROR: {node_info["message"]}')
         exit(0)
