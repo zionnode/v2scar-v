@@ -235,6 +235,17 @@ def init_node():
         print(f'ERROR: {node_info["message"]}')
         exit(0)
     print(node_info)
+    config =  update_config(config, node_info)
+    if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray':
+        set_v2ray_node(config, node_info)
+    if 'node_type' in node_info and node_info['node_type'] == 'ssr':
+        set_ssr_node()
+    if 'node_type' in node_info and node_info['node_type'] == 'ss':
+        set_ssr_node()
+    if 'dynamic' in node_info and node_info['dynamic']:
+        create_crontab_dynamic_ip()
+
+def update_config(config, node_info):
     if 'prefix' in node_info and node_info['prefix']:
         config['domain']['name'] = f"{node_info['prefix']}.{node_info['domain']}"
         config['dynamic'] = node_info['dynamic']
@@ -253,14 +264,7 @@ def init_node():
             ask_for_continue('WRANNING: failed to get domain ID from cloudfalre ddns!')
         os.system('curl https://get.acme.sh | sh')
         create_tls_keys(config['domain']['name'], node_info)
-    if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray':
-        set_v2ray_node(config, node_info)
-    if 'node_type' in node_info and node_info['node_type'] == 'ssr':
-        set_ssr_node()
-    if 'node_type' in node_info and node_info['node_type'] == 'ss':
-        set_ssr_node()
-    if 'dynamic' in node_info and node_info['dynamic']:
-        create_crontab_dynamic_ip()
+        return config
 
 def create_crontab_dynamic_ip():
     os.system('crontab -l > mycron')
@@ -335,6 +339,7 @@ def update_node():
             print('* problem with the config file')
             exit(0)
     node_info = get_node_info(config)
+    config = update_node(config, node_info)
     if 'message' in node_info:
         print(f'ERROR: {node_info["message"]}')
         exit(0)
