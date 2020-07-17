@@ -142,42 +142,6 @@ def get_dns_zone_id(config):
         return config
 
 
-def create_prefix(config, node_info, update):
-    public_ip = get_public_ip()
-    prefix = node_info['prefix']
-    if prefix and public_ip and config['domain']['id']:
-        content_header = get_headers(config)
-        base_url = get_base_url()
-        try:
-            print('creating name!')
-            data = json.dumps({
-                'type': 'A',
-                'name': prefix,
-                'content': public_ip,
-                'ttl': 120,
-                'priority': 10,
-                'proxied': False
-            })
-            print(data)
-            create_req = Request(
-                '{}{}/dns_records'.format(base_url, config['domain']['id']),
-                headers=content_header,
-                data=data.encode('utf-8')
-            )
-            create_req.get_method = lambda: 'POST'
-            create_resp = json.loads(
-                urlopen(create_req).read().decode('utf-8'))
-            print(create_resp)
-            config['domain']['host']['ipv4'] = public_ip
-            config['domain']['host']['name'] = prefix
-            config['domain']['host']['id'] = create_resp['result']['id']
-            return config, True
-        except:
-            print('creating failed!')
-    print('prefix or public_ip or domain_id not provided')
-    return config, update
-
-
 def query_ddns(config):
     content_header = get_headers(config)
     base_url = get_base_url()
@@ -209,12 +173,16 @@ def update_dynamic_ip():
     public_ip = get_public_ip()
     if config['domain']['ipv4'] == public_ip:
         return
+    update_ddns(config, public_ip)
+
+
+def update_ddns(config, ip):
     content_header = get_headers(config)
     base_url = get_base_url()
     data = json.dumps({
         'type': 'A',
         'name': config['domain']['name'],
-        'content': public_ip,
+        'content': ip,
         'priority': 5,
         'ttl': 120,
         'proxied': False
@@ -229,33 +197,6 @@ def update_dynamic_ip():
         config['domain']['ipv4'] = update_resp['result']['content']
         save_config(config)
 
-
-def update_public_ip(config, update):
-    content_header = get_headers(config)
-    base_url = get_base_url()
-    data = json.dumps({
-        'type': 'A',
-        'name': config['domain']['host']['name'],
-        'content': get_public_ip(),
-        'priority': 5,
-        'ttl': 120,
-        'proxied': False
-    })
-    update_req = Request(
-        '{base_url}{zion_id}/dns_records/{name_id}'.format(
-            base_url=base_url,
-            zion_id=config['domain']['id'],
-            name_id=config['domain']['host']['id']),
-        headers=content_header,
-        data=data.encode('utf-8'))
-    update_req.get_method = lambda: 'PUT'
-    try:
-        update_resp = json.loads(urlopen(update_req).read().decode('utf-8'))
-        config['domain']['host']['ipv4'] = update_resp['result']['content']
-        return config, True
-    except:
-        pass
-    return config, False
 
 def init_node():
     print("Input the API url (ex: api.example.com), follwed by [ENTER]:")
@@ -323,7 +264,7 @@ def init_node():
 
 def create_crontab_dynamic_ip():
     os.system('crontab -l > mycron')
-    os.system('echo "*/10 * * * * python3 /root/v2scar-v/cf_ddns.py update_dynamic_ip" >> mycron')
+    os.system('echo "*/10 * * * * python3 /root/v2scar-v/cf_ddns.py update_dynamic_ip > /dev/null 2>&1" >> mycron')
     os.system('crontab mycron')
     os.system('rm crontab')
 
@@ -401,10 +342,6 @@ def update_node():
         address = f'{node_info["prefix"]}.{node_info["domain"]}'
         if address != config['domain']['name']:
             create_tls_keys(address, node_info)
-            os.system('systemctl stop nginx')
-            os.system(f'~/.acme.sh/acme.sh --issue -d {address} --standalone -k 2048')
-            os.system(f'~/.acme.sh/acme.sh --installcert -d {address} --fullchainpath /root/v2ray.crt --keypath /root/v2ray.key')
-            reset_nginx(address, node_info['port'])
             config['domain']['name'] = address
         config['dynamic'] = node_info["dynamic"]
         save_config(config)
@@ -476,115 +413,3 @@ func_dict = {
 if __name__ == '__main__':
     func_dict[sys.argv[1]]()
 
-
-# with open(config_file_name, 'r') as config_file:
-#     try:
-#         config = json.loads(config_file.read())
-#     except ValueError:
-#         print('* problem with the config file')
-#         exit(0)
-
-# if not config['cloudflare_api']['email'] or not config['cloudflare_api']['api_key']:
-#     print('* missing CloudFlare auth credentials')
-#     exit(0)
-
-# if not config['apiurl']:
-#     print('* missing core_api address')
-#     exit(0)
-
-# if config['dynamic'] in ['True', 'TRUE']:
-#     is_dynamic = True
-# else:
-#     is_dynamic = False
-
-# public_ip = None
-# update = False
-
-# public_ip = get_public_ip()
-# if not public_ip:
-#     print('* Failed to get any public IP address')
-#     exit(0)
-
-# node_info = get_node_info(config, public_ip, config['apiurl'])
-# print(node_info)
-
-# if is_dynamic:
-#     pass
-# else:
-#     if hasattr(node_info, 'port'):
-#         port = node_info.port
-
-
-
-
-
-# if not 'domain' in node_info:
-#     # 查不到 node_info 但node 曾经注册过 core, 可能1: core 更改了对应的node 2. 此 node 的公网IP 更改过
-#     if config['domain']['host']['ipv4'] and config['domain']['host']['id'] and config['domain']['id'] and config['domain']['name'] and config['domain']['host']['name']:
-#         if public_ip != config['domain']['host']['ipv4']:
-#             ddns = query_ddns(config)
-#             print(ddns['id'], ddns['content'])
-#             print(config['domain']['host']['id'], config['domain']['host']['ipv4'])
-#             if ddns and ddns['id'] == config['domain']['host']['id'] and ddns['content'] == config['domain']['host']['ipv4']:
-#                 # 查询到该 node 的 DDNS 记录，且IP与该node 上存储的一致，说明core 未主动更改 IP, 是该node IP地址自动变化
-#                 print('updating name')
-#                 config, update = update_public_ip(config, update)
-
-
-# if 'prefix' in node_info:
-#     if not config['domain']['id'] or config['domain']['name'] != node_info['domain']:
-#         # 首次登录该 node
-#         config, update = update_or_get_dns_zone_id(config, node_info['domain'])
-#         print(config)
-#     if not config['domain']['host']['name'] or config['domain']['host']['name'] != node_info['prefix']:
-#         print(node_info['prefix'])
-#         config['domain']['host']['name'] = node_info['prefix']
-#         ddns = query_ddns(config)
-#         print(ddns)
-#         if ddns['content'] == get_public_ip():
-#             config['domain']['host']['id'] = ddns['id']
-#             config['domain']['host']['ipv4'] = get_public_ip()
-#             update = True
-
-
-# # node_info 查询失败，返回{'message': ''}
-# if 'message' in node_info:
-#     # 该node 尚未进行任何设置，core也未添加该node. 该node保持ready状态
-#     if not config['domain']['host']['id'] and not config['domain']['host']['name']:
-#         exit(0)
-
-#     # 1. core 主动修改IP地址，删除该node 或 2. 该 node ip 地址自行变更
-#     if config['domain']['host']['ipv4'] and config['domain']['host']['id'] and config['domain']['id'] and config['domain']['name'] and config['domain']['host']['name']:
-#         # 对比上一次设置与ddns当前设置 确认是 core 主动修改IP 地址 还是 node ip 地址自行变更:
-#         query_ddns(config, config['domain']['name'])
-
-
-# if config['domain']['host']['ipv4'] != public_ip and config['domain']['host']['id'] and config['domain']['id'] and config['domain']['name'] and config['domain']['host']['name']:
-#     print('change_node_info')
-#     node_info['prefix'] = config['domain']['host']['name']
-#     node_info['domain'] = config['domain']['name']
-# elif not 'domain' in node_info:
-#     print('* Failed to get node info from core server')
-#     exit(0)
-
-
-# if 'domain' in node_info:
-#     if config['domain']['id'] and config['domain']['name'] and config['domain']['name'] != node_info['domain']:
-#         print('find conflict, stop update')
-#         exit(0)
-#     config, update = update_or_get_dns_zone_id(config, node_info['domain'])
-#     if config['domain']['host']['id']:
-#         config, update = update_prefix(config, node_info, update)
-#     else:
-#         config, update = create_prefix(config, node_info, update)
-# else:
-#     config['domain']['host']['ipv4'] = ''
-#     update = True
-
-# if any records were updated, update the config file accordingly
-# if update:
-#     print('* updates completed. bye.')
-#     with open(config_file_name, 'w') as config_file:
-#         json.dump(config, config_file, indent=1, sort_keys=True)
-# else:
-#     print('* nothing to update. bye.')
