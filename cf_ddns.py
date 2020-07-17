@@ -294,7 +294,7 @@ def init_node():
         exit(0)
     print(node_info)
     if 'prefix' in node_info and node_info['prefix']:
-        config['domain']['name'] = f"{node_info['prefix']}.{node_info['domain']}
+        config['domain']['name'] = f"{node_info['prefix']}.{node_info['domain']}"
         config['dynamic'] = node_info['dynamic']
         config['node_type'] = node_info['node_type']
         save_config(config)
