@@ -312,7 +312,7 @@ def init_node():
             ask_for_continue('WRANNING: failed to get domain ID from cloudfalre ddns!')
         os.system('curl https://get.acme.sh | sh')
         create_tls_keys(config['domain']['name'], node_info)
-    if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray'
+    if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray':
         set_v2ray_node(config, node_info)
     if 'node_type' in node_info and node_info['node_type'] == 'ssr':
         set_ssr_node()
