@@ -23,6 +23,7 @@ def get_public_ip():
     try:
         public_ipv4 = urlopen(
             Request('http://116.202.55.106')).read().rstrip().decode('utf-8')
+        print(f"Got public ip: {public_ipv4}")
         return public_ipv4
     except URLError as e:
         return None
@@ -44,7 +45,9 @@ def hash_ip_to_node_id(ip):
 
 def get_node_id():
     ip = get_public_ip()
-    return hash_ip_to_node_id(ip)
+    node_id = hash_ip_to_node_id(ip)
+    print(f"Got node_id: {node_id}")
+    return node_id
 
 def get_token(config):
     try:
