@@ -58,7 +58,7 @@ def get_token(config):
 
 def get_node_info(config):
     try:
-        apiurl = config['apirul']
+        apiurl = config['apiurl']
         node_id = get_node_id()
         token = get_token(config)
         header = {'token': token, 'Content-type': 'application/json'}
@@ -67,7 +67,7 @@ def get_node_info(config):
         api_resp = urlopen(api_req)
         return json.loads(api_resp.read().decode('utf-8'))
     except:
-        return None
+        return {'message': 'Failed to get node_info'}
 
 
 def update_or_get_dns_zone_id(config, domain):
