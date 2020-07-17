@@ -353,8 +353,8 @@ def ask_for_continue(message):
     print(message)
     print('Continue? y - Yes, n - No')
     string_input = sys.stdin.readline().rstrip('\n')
-        if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
-            exit(0)
+    if not string_input in ['y', 'Y', 'Yes', 'yes', 'YES', 'True', 'true', 'TRUE']:
+        exit(0)
 
 
 def create_tls_keys(address, node_info):
