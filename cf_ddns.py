@@ -235,7 +235,10 @@ def init_node():
         print(f'ERROR: {node_info["message"]}')
         exit(0)
     print(node_info)
-    config =  update_config(config, node_info)
+    config = update_config(config, node_info)
+    os.system('curl https://get.acme.sh | sh')
+    create_tls_keys(config['domain']['name'], node_info)
+    
     if 'port' in node_info and 'node_type' in node_info and node_info['node_type'] == 'v2ray':
         set_v2ray_node(config, node_info)
     if 'node_type' in node_info and node_info['node_type'] == 'ssr':
@@ -262,8 +265,6 @@ def update_config(config, node_info):
             save_config(config)
         else:
             ask_for_continue('WRANNING: failed to get domain ID from cloudfalre ddns!')
-        os.system('curl https://get.acme.sh | sh')
-        create_tls_keys(config['domain']['name'], node_info)
         return config
 
 def create_crontab_dynamic_ip():
