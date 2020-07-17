@@ -62,7 +62,7 @@ def get_node_info(config):
         node_id = get_node_id()
         token = get_token(config)
         header = {'token': token, 'Content-type': 'application/json'}
-        api_endpoint = f'{apiurl}/api/nodeinfo/{node_id}/vtwo/'
+        api_endpoint = f'{apiurl}/api/nodeinfo/{node_id}/'
         api_req = Request(api_endpoint, headers=header)
         api_resp = urlopen(api_req)
         return json.loads(api_resp.read().decode('utf-8'))
