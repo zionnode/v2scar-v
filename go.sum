@@ -51,5 +51,7 @@ honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 v2ray.com/core v4.15.0+incompatible h1:my1X3WD45iZIXPTz1nse9YBkZxuJzhO9F8bkPPBhO74=
 v2ray.com/core v4.15.0+incompatible/go.mod h1:kCjxLuEer3COnk8YSZBx9xHnqadF1zMlaaZaKIgdEB0=
+v2ray.com/core v4.19.1+incompatible h1:JWoYsYlCpFOJX5KcmSkAMHOqOjzux+wx/HtgMBkUvSg=
+v2ray.com/core v4.19.1+incompatible/go.mod h1:0yC/gG6Jd6qgp9PuaXuFE9uOi1xVYoDPexD1nlFms/w=
 v2ray.com/core v4.20.0+incompatible h1:CMwF0n0z9Ta/nDNYuOq2LuL/WqvOapDpZzMgrFg9MSI=
 v2ray.com/core v4.20.0+incompatible/go.mod h1:0yC/gG6Jd6qgp9PuaXuFE9uOi1xVYoDPexD1nlFms/w=
