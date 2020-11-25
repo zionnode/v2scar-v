@@ -1,4 +1,4 @@
-module github.com/zionladder/v2scar
+module github.com/zionladder/v2scar-v
 
 require (
 	github.com/urfave/cli v1.22.4

@@ -7,7 +7,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/Ehco1996/v2scar"
+	"github.com/zionladder/v2scar-v"
 )
 
 var SYNC_TIME int
