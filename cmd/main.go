@@ -7,12 +7,13 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/zionnode/v2scar-v"
+	"github.com/Ehco1996/v2scar"
 )
 
 var SYNC_TIME int
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	app := cli.NewApp()
 	app.Name = "v2scar"
